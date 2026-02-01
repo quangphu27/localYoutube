@@ -100,57 +100,78 @@ def download_videos():
         
         try:
             safe_title = f'video_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
-            ydl_opts = {
-                'format': 'best[ext=mp4]/best',
-                'outtmpl': os.path.join(app.config['UPLOAD_FOLDER'], f'{safe_title}.%(ext)s'),
-                'quiet': False,
-                'no_warnings': False,
-                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'extractor_args': {
-                    'youtube': {
-                        'player_client': ['android', 'web'],
-                        'player_skip': ['webpage', 'configs'],
-                    }
-                },
-                'http_headers': {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'en-us,en;q=0.5',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'Connection': 'keep-alive',
-                },
-                'nocheckcertificate': True,
-                'ignoreerrors': False,
-            }
+            format_selectors = [
+                'best[height<=720]',
+                'best[height<=480]',
+                'worst[height>=240]',
+                'best'
+            ]
             
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                filename = ydl.prepare_filename(info)
-                
-                if not os.path.exists(filename):
-                    ext = info.get('ext', 'mp4')
-                    filename = os.path.join(app.config['UPLOAD_FOLDER'], f'{safe_title}.{ext}')
-                
-                if os.path.exists(filename):
-                    title = info.get('title', 'Unknown')
-                    duration = info.get('duration', 0)
+            downloaded_video = False
+            last_error = None
+            
+            for format_selector in format_selectors:
+                try:
+                    ydl_opts = {
+                        'format': format_selector,
+                        'outtmpl': os.path.join(app.config['UPLOAD_FOLDER'], f'{safe_title}.%(ext)s'),
+                        'quiet': False,
+                        'no_warnings': False,
+                        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'extractor_args': {
+                            'youtube': {
+                                'player_client': ['ios', 'android', 'web'],
+                                'player_skip': ['webpage', 'configs'],
+                            }
+                        },
+                        'http_headers': {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            'Accept-Language': 'en-us,en;q=0.5',
+                            'Accept-Encoding': 'gzip, deflate',
+                            'Connection': 'keep-alive',
+                        },
+                        'nocheckcertificate': True,
+                        'ignoreerrors': False,
+                    }
                     
-                    video = Video(
-                        filename=os.path.basename(filename),
-                        original_url=url,
-                        title=title,
-                        duration=duration,
-                        file_path=filename,
-                        position=Video.query.count()
-                    )
-                    db.session.add(video)
-                    db.session.commit()
-                    
-                    downloaded.append({
-                        'id': video.id,
-                        'title': title,
-                        'filename': video.filename
-                    })
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=True)
+                        filename = ydl.prepare_filename(info)
+                        
+                        if not os.path.exists(filename):
+                            ext = info.get('ext', 'mp4')
+                            filename = os.path.join(app.config['UPLOAD_FOLDER'], f'{safe_title}.{ext}')
+                        
+                        if os.path.exists(filename) and os.path.getsize(filename) > 0:
+                            title = info.get('title', 'Unknown')
+                            duration = info.get('duration', 0)
+                            
+                            video = Video(
+                                filename=os.path.basename(filename),
+                                original_url=url,
+                                title=title,
+                                duration=duration,
+                                file_path=filename,
+                                position=Video.query.count()
+                            )
+                            db.session.add(video)
+                            db.session.commit()
+                            
+                            downloaded.append({
+                                'id': video.id,
+                                'title': title,
+                                'filename': video.filename
+                            })
+                            downloaded_video = True
+                            break
+                except Exception as format_error:
+                    last_error = format_error
+                    continue
+            
+            if not downloaded_video:
+                raise Exception(str(last_error) if last_error else 'Unable to download video')
+                
         except Exception as e:
             errors.append({'url': url, 'error': str(e)})
     
