@@ -90,6 +90,9 @@ def download_videos():
     if not urls:
         return jsonify({'error': 'No URLs provided'}), 400
     
+    cookie_file = os.path.join(os.path.dirname(__file__), 'cookie.txt')
+    use_cookies = os.path.exists(cookie_file) and os.path.getsize(cookie_file) > 0
+    
     downloaded = []
     errors = []
     
@@ -134,6 +137,9 @@ def download_videos():
                         'nocheckcertificate': True,
                         'ignoreerrors': False,
                     }
+                    
+                    if use_cookies:
+                        ydl_opts['cookiefile'] = cookie_file
                     
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=True)

@@ -9,3 +9,4 @@ ENV/
 media/
 *.db
 *.sqlite
+cookie.txt
