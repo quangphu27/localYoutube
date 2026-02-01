@@ -1,0 +1,37 @@
+.download-page {
+  min-height: 100vh;
+  background-color: #0f0f0f;
+}
+
+.download-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.download-section {
+  background-color: #212121;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.download-section h2 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.management-section {
+  background-color: #212121;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.management-section h2 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}

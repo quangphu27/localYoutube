@@ -1,0 +1,41 @@
+.watch-page {
+  min-height: 100vh;
+  background-color: #0f0f0f;
+}
+
+.watch-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 56px);
+  color: #aaaaaa;
+  font-size: 16px;
+}
+
+.watch-content {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.watch-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.watch-sidebar {
+  width: 400px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+  .watch-content {
+    flex-direction: column;
+  }
+  
+  .watch-sidebar {
+    width: 100%;
+  }
+}

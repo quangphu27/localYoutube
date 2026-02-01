@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './components/Login'
 import Register from './components/Register'
-import Home from './components/Home'
+import DownloadPage from './components/DownloadPage'
+import WatchPage from './components/WatchPage'
 import './App.css'
 
 function App() {
@@ -25,19 +26,31 @@ function App() {
         <Route 
           path="/login" 
           element={
-            isAuthenticated ? <Navigate to="/" /> : <Login setIsAuthenticated={setIsAuthenticated} />
+            isAuthenticated ? <Navigate to="/download" /> : <Login setIsAuthenticated={setIsAuthenticated} />
           } 
         />
         <Route 
           path="/register" 
           element={
-            isAuthenticated ? <Navigate to="/" /> : <Register />
+            isAuthenticated ? <Navigate to="/download" /> : <Register />
+          } 
+        />
+        <Route 
+          path="/download" 
+          element={
+            isAuthenticated ? <DownloadPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/login" />
+          } 
+        />
+        <Route 
+          path="/watch/:videoId?" 
+          element={
+            isAuthenticated ? <WatchPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/login" />
           } 
         />
         <Route 
           path="/" 
           element={
-            isAuthenticated ? <Home setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/login" />
+            isAuthenticated ? <Navigate to="/download" /> : <Navigate to="/login" />
           } 
         />
       </Routes>
